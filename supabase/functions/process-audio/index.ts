@@ -107,7 +107,10 @@ Deno.serve(async (req: Request) => {
 
       // Transcribe with OpenAI Whisper
       const formData = new FormData();
-      formData.append('file', audioBlob, 'audio.wav');
+      // Extract file extension from audioPath to preserve original format
+      const fileExtension = audioPath.split('.').pop() || 'wav';
+      const fileName = `audio.${fileExtension}`;
+      formData.append('file', audioBlob, fileName);
       formData.append('model', 'whisper-1');
       formData.append('response_format', 'verbose_json');
       formData.append('language', 'en');
