@@ -73,9 +73,15 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpl
     setIsUploading(true);
 
     try {
+      // Ensure we have a valid user session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.user) {
+        throw new Error('Authentication required. Please sign in again.');
+      }
+
       // Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      const fileName = `${session.user.id}/${Date.now()}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from(AUDIO_BUCKET)
@@ -92,7 +98,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpl
       const { data: meeting, error: meetingError } = await supabase
         .from('meetings')
         .insert({
-          owner_id: user.id,
+          owner_id: session.user.id,
           title: title.trim(),
           audio_path: fileName,
           audio_size: file.size,
@@ -102,6 +108,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpl
         .single();
 
       if (meetingError) {
+        console.error('Meeting insert error:', meetingError);
         throw new Error(`Failed to create meeting: ${meetingError.message}`);
       }
 
