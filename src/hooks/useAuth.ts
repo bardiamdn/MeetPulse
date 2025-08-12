@@ -6,13 +6,19 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  console.log('useAuth hook initialized, loading:', loading);
+
   useEffect(() => {
+    console.log('useAuth useEffect running');
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('getSession result:', { session: !!session, error });
       if (error) {
         console.error('Session error:', error);
       }
       setUser(session?.user ?? null);
+      console.log('Setting loading to false after getSession');
       setLoading(false);
     });
 
@@ -20,8 +26,10 @@ export const useAuth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, !!session);
       setUser(session?.user ?? null);
       if (loading) {
+        console.log('Setting loading to false from auth state change');
         setLoading(false);
       }
 
