@@ -13,6 +13,8 @@ function App() {
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(null);
   const [processingMeetingId, setProcessingMeetingId] = useState<string | null>(null);
 
+  console.log('App render - user:', !!user, 'loading:', loading);
+
   const handleUploadStart = (meetingId: string) => {
     setProcessingMeetingId(meetingId);
     setSelectedMeetingId(meetingId);
@@ -25,6 +27,7 @@ function App() {
   };
 
   if (loading) {
+    console.log('App showing loading spinner');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -33,6 +36,7 @@ function App() {
   }
 
   if (!user) {
+    console.log('App showing auth modal');
     return (
       <>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -67,6 +71,7 @@ function App() {
   }
 
   if (selectedMeetingId) {
+    console.log('App showing dashboard');
     return (
       <>
         <Dashboard 
@@ -78,6 +83,7 @@ function App() {
     );
   }
 
+  console.log('App showing meetings list');
   return (
     <>
       <MeetingsList 
