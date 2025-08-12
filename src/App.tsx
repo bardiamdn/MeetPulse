@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './hooks/useAuth';
 import { AuthModal } from './components/AuthModal';
@@ -15,16 +15,28 @@ function App() {
 
   console.log('App render - user:', !!user, 'loading:', loading);
 
-  const handleUploadStart = (meetingId: string) => {
+  const handleUploadStart = useCallback((meetingId: string) => {
     setProcessingMeetingId(meetingId);
     setSelectedMeetingId(meetingId);
     setShowUploadModal(false);
-  };
+  }, []);
 
-  const handleBackToMeetings = () => {
+  const handleBackToMeetings = useCallback(() => {
     setSelectedMeetingId(null);
     setProcessingMeetingId(null);
-  };
+  }, []);
+
+  const handleMeetingSelect = useCallback((meetingId: string) => {
+    setSelectedMeetingId(meetingId);
+  }, []);
+
+  const handleUploadClick = useCallback(() => {
+    setShowUploadModal(true);
+  }, []);
+
+  const handleCloseUploadModal = useCallback(() => {
+    setShowUploadModal(false);
+  }, []);
 
   if (loading) {
     console.log('App showing loading spinner');
@@ -87,14 +99,14 @@ function App() {
   return (
     <>
       <MeetingsList 
-        onMeetingSelect={setSelectedMeetingId}
-        onUploadClick={() => setShowUploadModal(true)}
+        onMeetingSelect={handleMeetingSelect}
+        onUploadClick={handleUploadClick}
         processingMeetingId={processingMeetingId}
       />
       
       <UploadModal
         isOpen={showUploadModal}
-        onClose={() => setShowUploadModal(false)}
+        onClose={handleCloseUploadModal}
         onUploadStart={handleUploadStart}
       />
       
