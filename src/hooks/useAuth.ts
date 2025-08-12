@@ -28,10 +28,8 @@ export const useAuth = () => {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state change:', event, !!session);
       setUser(session?.user ?? null);
-      if (loading) {
-        console.log('Setting loading to false from auth state change');
-        setLoading(false);
-      }
+      console.log('Setting loading to false from auth state change');
+      setLoading(false);
 
       // Create profile if user signs up
       if (event === 'SIGNED_IN' && session?.user) {
