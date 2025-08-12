@@ -43,7 +43,6 @@ export const useAuth = () => {
         } catch (error) {
           console.error('Profile creation error:', error);
         }
-        }
       }
     });
 
