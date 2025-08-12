@@ -121,7 +121,15 @@ export const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpl
       });
 
       if (processError) {
-        throw new Error(`Processing failed: ${processError.message}`);
+        // Parse the error message to provide better user feedback
+        const errorMessage = processError.message || 'Unknown processing error';
+        if (errorMessage.includes('quota exceeded')) {
+          throw new Error('OpenAI API quota exceeded. Please contact support or try again later.');
+        } else if (errorMessage.includes('Invalid OpenAI API key')) {
+          throw new Error('API configuration error. Please contact support.');
+        } else {
+          throw new Error(`Processing failed: ${errorMessage}`);
+        }
       }
 
       toast.success('Audio uploaded and processing started!');

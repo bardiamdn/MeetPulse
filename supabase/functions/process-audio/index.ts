@@ -122,7 +122,14 @@ Deno.serve(async (req: Request) => {
 
       if (!transcriptionResponse.ok) {
         const error = await transcriptionResponse.text();
-        throw new Error(`OpenAI transcription failed: ${error}`);
+        const errorData = JSON.parse(error);
+        if (errorData.error?.code === 'insufficient_quota') {
+          throw new Error('OpenAI API quota exceeded. Please check your OpenAI billing and upgrade your plan.');
+        } else if (errorData.error?.code === 'invalid_api_key') {
+          throw new Error('Invalid OpenAI API key. Please check your API key configuration.');
+        } else {
+          throw new Error(`OpenAI transcription failed: ${errorData.error?.message || error}`);
+        }
       }
 
       const whisperResult: WhisperResponse = await transcriptionResponse.json();
