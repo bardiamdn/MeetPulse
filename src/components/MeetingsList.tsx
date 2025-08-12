@@ -23,8 +23,11 @@ export const MeetingsList: React.FC<MeetingsListProps> = ({
   useEffect(() => {
     if (!user) return;
 
+    console.log('MeetingsList useEffect running for user:', user.id);
+
     const fetchMeetings = async () => {
       try {
+        console.log('Fetching meetings...');
         const { data, error } = await supabase
           .from('meetings')
           .select('*')
@@ -32,15 +35,18 @@ export const MeetingsList: React.FC<MeetingsListProps> = ({
           .order('created_at', { ascending: false });
 
         if (error) {
+          console.error('Error fetching meetings:', error);
           toast.error('Failed to load meetings');
           return;
         }
 
+        console.log('Meetings fetched:', data?.length || 0);
         setMeetings(data || []);
       } catch (error) {
         console.error('Error fetching meetings:', error);
         toast.error('Failed to load meetings');
       } finally {
+        console.log('Setting loading to false in MeetingsList');
         setLoading(false);
       }
     };
@@ -48,6 +54,7 @@ export const MeetingsList: React.FC<MeetingsListProps> = ({
     fetchMeetings();
 
     // Subscribe to meeting updates
+    console.log('Setting up meetings subscription');
     const subscription = supabase
       .channel('meetings-changes')
       .on('postgres_changes', {
@@ -56,11 +63,13 @@ export const MeetingsList: React.FC<MeetingsListProps> = ({
         table: 'meetings',
         filter: `owner_id=eq.${user.id}`
       }, () => {
+        console.log('Meeting change detected, refetching...');
         fetchMeetings();
       })
       .subscribe();
 
     return () => {
+      console.log('Cleaning up meetings subscription');
       subscription.unsubscribe();
     };
   }, [user]);
