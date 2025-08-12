@@ -8,7 +8,10 @@ export const useAuth = () => {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Session error:', error);
+      }
       setUser(session?.user ?? null);
       setLoading(false);
     });
@@ -18,21 +21,28 @@ export const useAuth = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
-      setLoading(false);
+      if (loading) {
+        setLoading(false);
+      }
 
       // Create profile if user signs up
       if (event === 'SIGNED_IN' && session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id);
 
-        if (!profile || profile.length === 0) {
-          await supabase.from('profiles').insert({
-            id: session.user.id,
-            full_name: session.user.user_metadata?.full_name || '',
-            avatar_url: session.user.user_metadata?.avatar_url || '',
-          });
+          if (!profile || profile.length === 0) {
+            await supabase.from('profiles').insert({
+              id: session.user.id,
+              full_name: session.user.user_metadata?.full_name || '',
+              avatar_url: session.user.user_metadata?.avatar_url || '',
+            });
+          }
+        } catch (error) {
+          console.error('Profile creation error:', error);
+        }
         }
       }
     });
