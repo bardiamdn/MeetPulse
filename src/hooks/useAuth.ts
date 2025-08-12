@@ -5,20 +5,19 @@ import { supabase } from '../lib/supabase';
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-
-  console.log('useAuth hook initialized, loading:', loading);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    console.log('useAuth useEffect running');
+    if (initialized) return;
+    
+    setInitialized(true);
     
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log('getSession result:', { session: !!session, error });
       if (error) {
         console.error('Session error:', error);
       }
       setUser(session?.user ?? null);
-      console.log('Setting loading to false after getSession');
       setLoading(false);
     });
 
@@ -26,10 +25,8 @@ export const useAuth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, !!session);
       setUser(session?.user ?? null);
-      console.log('Setting loading to false from auth state change');
-      setLoading(false);
+      if (!loading) setLoading(false);
 
       // Create profile if user signs up
       if (event === 'SIGNED_IN' && session?.user) {
@@ -53,7 +50,7 @@ export const useAuth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [initialized, loading]);
 
   const signInWithEmail = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
