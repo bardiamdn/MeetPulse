@@ -159,27 +159,128 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
   };
 
   const handleExport = async () => {
-    if (!analysis?.analysis_json) return;
+    if (!analysis?.analysis_json || !meeting) return;
 
-    const csvContent = [
-      'Type,Content,Owner,Due Date,Priority,Timestamp',
-      ...analysis.analysis_json.action_items.map(item => 
-        `Action Item,"${item.text.replace(/"/g, '""')}","${item.owner}","${item.due_date || ''}","${item.priority}",${item.timestamp}`
-      ),
-      ...analysis.analysis_json.timeline_events.map(event =>
-        `Timeline,"${event.title.replace(/"/g, '""')}","","","",${event.time}`
-      )
-    ].join('\n');
+    // Helper function to escape CSV values
+    const escapeCSV = (value: any) => {
+      if (value === null || value === undefined) return '';
+      const str = String(value);
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    // Format time helper
+    const formatTime = (seconds: number) => {
+      const minutes = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    // Create comprehensive CSV content
+    const csvSections = [];
+
+    // Meeting Information
+    csvSections.push('MEETING INFORMATION');
+    csvSections.push('Field,Value');
+    csvSections.push(`Title,${escapeCSV(meeting.title)}`);
+    csvSections.push(`Date,${escapeCSV(new Date(meeting.created_at).toLocaleDateString())}`);
+    csvSections.push(`Duration,${meeting.duration_seconds ? Math.round(meeting.duration_seconds / 60) + ' minutes' : 'N/A'}`);
+    csvSections.push(`Status,${escapeCSV(meeting.status)}`);
+    csvSections.push('');
+
+    // Summary
+    csvSections.push('SUMMARY');
+    csvSections.push('Content');
+    csvSections.push(escapeCSV(analysis.analysis_json.summary));
+    csvSections.push('');
+
+    // Action Items
+    csvSections.push('ACTION ITEMS');
+    csvSections.push('Text,Owner,Due Date,Priority,Timestamp,Completed,Confidence');
+    
+    // Use the current actionItems state which includes user-created tasks
+    actionItems.forEach(item => {
+      csvSections.push([
+        escapeCSV(item.text),
+        escapeCSV(item.owner || ''),
+        escapeCSV(item.due_date || ''),
+        escapeCSV(item.priority),
+        item.timestamp_sec ? formatTime(item.timestamp_sec) : '',
+        escapeCSV(item.completed ? 'Yes' : 'No'),
+        escapeCSV(Math.round((item.confidence || 0) * 100) + '%')
+      ].join(','));
+    });
+    csvSections.push('');
+
+    // Timeline Events
+    csvSections.push('TIMELINE EVENTS');
+    csvSections.push('Time,Title,Description,Importance');
+    analysis.analysis_json.timeline_events.forEach(event => {
+      csvSections.push([
+        formatTime(event.time),
+        escapeCSV(event.title),
+        escapeCSV(event.description),
+        escapeCSV(Math.round(event.importance * 100) + '%')
+      ].join(','));
+    });
+    csvSections.push('');
+
+    // Speakers
+    csvSections.push('SPEAKERS');
+    csvSections.push('Name,Speaking Time,Speaking Percentage');
+    analysis.analysis_json.speakers.forEach(speaker => {
+      const minutes = Math.floor(speaker.speaking_time_seconds / 60);
+      const seconds = Math.floor(speaker.speaking_time_seconds % 60);
+      const timeStr = `${minutes}m ${seconds}s`;
+      
+      csvSections.push([
+        escapeCSV(speaker.name),
+        timeStr,
+        escapeCSV(Math.round(speaker.speaking_percentage) + '%')
+      ].join(','));
+    });
+    csvSections.push('');
+
+    // Sentiment Data
+    csvSections.push('SENTIMENT ANALYSIS');
+    csvSections.push('Time,Sentiment Value,Sentiment Description');
+    analysis.analysis_json.sentiment.forEach(point => {
+      const sentimentDesc = point.value > 0.3 ? 'Positive' : 
+                           point.value < -0.3 ? 'Negative' : 'Neutral';
+      csvSections.push([
+        formatTime(point.time),
+        escapeCSV(Math.round(point.value * 100)),
+        sentimentDesc
+      ].join(','));
+    });
+    csvSections.push('');
+
+    // Transcript
+    csvSections.push('TRANSCRIPT');
+    csvSections.push('Speaker,Start Time,End Time,Text,Confidence');
+    transcriptSegments.forEach(segment => {
+      csvSections.push([
+        escapeCSV(segment.speaker),
+        formatTime(segment.start_sec),
+        formatTime(segment.end_sec),
+        escapeCSV(segment.text),
+        escapeCSV(Math.round(segment.confidence * 100) + '%')
+      ].join(','));
+    });
+
+    const csvContent = csvSections.join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${meeting?.title || 'meeting'}-analysis.csv`;
+    a.download = `${meeting.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}-analysis.csv`;
     a.click();
     URL.revokeObjectURL(url);
 
-    toast.success('Analysis exported successfully!');
+    toast.success('Complete analysis exported successfully!');
   };
 
   if (loading) {
