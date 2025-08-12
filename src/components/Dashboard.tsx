@@ -9,6 +9,7 @@ import { TranscriptViewer } from './TranscriptViewer';
 import { ActionItemsPanel } from './ActionItemsPanel';
 import { PeoplePanel } from './PeoplePanel';
 import { ProcessingState } from './ProcessingState';
+import { TaskModal } from './TaskModal';
 import toast from 'react-hot-toast';
 
 interface DashboardProps {
@@ -24,6 +25,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [currentTimestamp, setCurrentTimestamp] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskInitialText, setTaskInitialText] = useState('');
   const { user } = useAuth();
 
   useEffect(() => {
@@ -144,6 +147,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
     );
   };
 
+  const handleCreateTask = (initialText: string = '') => {
+    setTaskInitialText(initialText);
+    setShowTaskModal(true);
+  };
+
+  const handleTaskCreated = (newTask: ActionItem) => {
+    setActionItems(prev => [...prev, newTask]);
+    setShowTaskModal(false);
+    setTaskInitialText('');
+  };
+
   const handleExport = async () => {
     if (!analysis?.analysis_json) return;
 
@@ -239,7 +253,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
             <SummaryCard
               summary={analysis.analysis_json.summary}
               confidence={analysis.confidence_score}
-              onCreateTask={() => toast.success('Task creation coming soon!')}
+              onCreateTask={handleCreateTask}
             />
             
             <Timeline
@@ -293,7 +307,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
             <ActionItemsPanel
               actionItems={actionItems}
               onToggleComplete={handleActionItemToggle}
-              onAddTask={() => toast.success('Add task functionality coming soon!')}
+              onAddTask={handleCreateTask}
             />
             
             <PeoplePanel
@@ -305,6 +319,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
           </div>
         </div>
       </div>
+      
+      <TaskModal
+        isOpen={showTaskModal}
+        onClose={() => {
+          setShowTaskModal(false);
+          setTaskInitialText('');
+        }}
+        analysisId={analysis.id}
+        initialText={taskInitialText}
+        onTaskCreated={handleTaskCreated}
+      />
     </div>
   );
 };

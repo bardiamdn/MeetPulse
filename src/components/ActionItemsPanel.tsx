@@ -6,7 +6,7 @@ import { ActionItem } from '../lib/supabase';
 interface ActionItemsPanelProps {
   actionItems: ActionItem[];
   onToggleComplete: (actionItem: ActionItem) => void;
-  onAddTask: () => void;
+  onAddTask: (initialText?: string) => void;
 }
 
 export const ActionItemsPanel: React.FC<ActionItemsPanelProps> = ({
@@ -46,7 +46,7 @@ export const ActionItemsPanel: React.FC<ActionItemsPanelProps> = ({
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-gray-900">Action Items</h2>
         <button
-          onClick={onAddTask}
+          onClick={() => onAddTask()}
           className="inline-flex items-center space-x-1 text-blue-600 hover:text-blue-700 transition-colors text-sm"
         >
           <Plus size={14} />

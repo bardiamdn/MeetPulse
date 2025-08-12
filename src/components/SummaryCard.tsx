@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 interface SummaryCardProps {
   summary: string;
   confidence: number;
-  onCreateTask: () => void;
+  onCreateTask: (initialText: string) => void;
 }
 
 export const SummaryCard: React.FC<SummaryCardProps> = ({
@@ -33,7 +33,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
       </p>
       
       <button
-        onClick={onCreateTask}
+        onClick={() => onCreateTask(`Follow up on: ${summary.split('.')[0]}`)}
         className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
       >
         <Plus size={14} />
