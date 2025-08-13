@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Calendar, User, Flag, Clock } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
@@ -8,7 +8,9 @@ interface TaskModalProps {
   onClose: () => void;
   analysisId: string;
   initialText?: string;
+  editingTask?: ActionItem | null;
   onTaskCreated: (task: any) => void;
+  onTaskUpdated?: (task: any) => void;
 }
 
 export const TaskModal: React.FC<TaskModalProps> = ({
@@ -16,13 +18,30 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   onClose,
   analysisId,
   initialText = '',
-  onTaskCreated
+  editingTask = null,
+  onTaskCreated,
+  onTaskUpdated
 }) => {
   const [text, setText] = useState(initialText);
   const [owner, setOwner] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Load editing task data
+  useEffect(() => {
+    if (editingTask) {
+      setText(editingTask.text);
+      setOwner(editingTask.owner || '');
+      setDueDate(editingTask.due_date || '');
+      setPriority(editingTask.priority);
+    } else {
+      setText(initialText);
+      setOwner('');
+      setDueDate('');
+      setPriority('medium');
+    }
+  }, [editingTask, initialText]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,36 +53,55 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase
-        .from('action_items')
-        .insert({
-          analysis_id: analysisId,
-          text: text.trim(),
-          owner: owner.trim() || null,
-          due_date: dueDate || null,
-          priority,
-          confidence: 1.0, // User-created tasks have full confidence
-          completed: false
-        })
-        .select()
-        .single();
+      if (editingTask) {
+        // Update existing task
+        const { data, error } = await supabase
+          .from('action_items')
+          .update({
+            text: text.trim(),
+            owner: owner.trim() || null,
+            due_date: dueDate || null,
+            priority,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingTask.id)
+          .select()
+          .single();
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw error;
+        }
+
+        toast.success('Task updated successfully!');
+        onTaskUpdated?.(data);
+      } else {
+        // Create new task
+        const { data, error } = await supabase
+          .from('action_items')
+          .insert({
+            analysis_id: analysisId,
+            text: text.trim(),
+            owner: owner.trim() || null,
+            due_date: dueDate || null,
+            priority,
+            confidence: 1.0, // User-created tasks have full confidence
+            completed: false
+          })
+          .select()
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        toast.success('Task created successfully!');
+        onTaskCreated(data);
       }
-
-      toast.success('Task created successfully!');
-      onTaskCreated(data);
-      onClose();
       
-      // Reset form
-      setText('');
-      setOwner('');
-      setDueDate('');
-      setPriority('medium');
+      onClose();
     } catch (error) {
       console.error('Error creating task:', error);
-      toast.error('Failed to create task');
+      toast.error(editingTask ? 'Failed to update task' : 'Failed to create task');
     } finally {
       setIsLoading(false);
     }
@@ -71,16 +109,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
   const handleClose = () => {
     onClose();
-    // Don't reset text to preserve initialText
-    setOwner('');
-    setDueDate('');
-    setPriority('medium');
   };
-
-  // Update text when initialText changes
-  React.useEffect(() => {
-    setText(initialText);
-  }, [initialText]);
 
   if (!isOpen) return null;
 
@@ -88,7 +117,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Create Task</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {editingTask ? 'Edit Task' : 'Create Task'}
+          </h2>
           <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -185,7 +216,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               disabled={isLoading || !text.trim()}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Creating...' : 'Create Task'}
+              {isLoading 
+                ? (editingTask ? 'Updating...' : 'Creating...') 
+                : (editingTask ? 'Update Task' : 'Create Task')
+              }
             </button>
           </div>
         </form>

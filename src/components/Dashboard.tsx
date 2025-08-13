@@ -496,10 +496,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
         onClose={() => {
           setShowTaskModal(false);
           setTaskInitialText('');
+          setEditingTask(null);
         }}
         analysisId={analysis.id}
         initialText={taskInitialText}
+        editingTask={editingTask}
         onTaskCreated={handleTaskCreated}
+        onTaskUpdated={handleTaskUpdated}
       />
       
       <SpeakerModal
