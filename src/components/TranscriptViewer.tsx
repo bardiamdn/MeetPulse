@@ -59,7 +59,7 @@ export const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   }
 
   return (
-    <div ref={containerRef} className="h-full overflow-y-auto">
+    <div ref={containerRef} className="h-full overflow-y-auto w-full">
       <div className="space-y-4 p-6">
         {segments.map((segment, index) => {
           const isActive = isActiveSegment(segment);
