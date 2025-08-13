@@ -434,7 +434,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
           <div className="lg:col-span-6 flex">
             <div className="bg-white rounded-xl shadow-sm">
               <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between bg-pink-200">
                   <h2 className="text-lg font-semibold text-gray-900">Transcript</h2>
                   <div className="flex items-center space-x-2">
                     <button
