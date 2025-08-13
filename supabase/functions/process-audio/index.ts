@@ -196,7 +196,16 @@ Deno.serve(async (req: Request) => {
   ]
 }
 
-Transcript segments: ${JSON.stringify(whisperResult.segments)}
+IMPORTANT INSTRUCTIONS:
+1. IDENTIFY MULTIPLE SPEAKERS: Analyze voice patterns, speaking styles, and content to identify different speakers
+2. ASSIGN MEANINGFUL NAMES: Give speakers descriptive names based on their role or speaking patterns (e.g., "Meeting Host", "Project Manager", "Technical Lead", "Client Representative")
+3. SPEAKER CONSISTENCY: Ensure the same speaker gets the same name throughout all transcript segments
+4. VOICE CHANGES: Look for changes in speaking style, vocabulary, or context that indicate different speakers
+5. MINIMUM 2 SPEAKERS: Unless it's clearly a monologue, try to identify at least 2-3 different speakers
+
+Raw transcript segments from Whisper: ${JSON.stringify(whisperResult.segments)}
+
+Analyze the above segments carefully for speaker changes and assign meaningful speaker names.
 
 Return only valid JSON, no other text.`;
 

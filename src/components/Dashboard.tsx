@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Share2, Download, Eye, Plus, Search } from 'lucide-react';
+import { Share2, Download, Eye, Plus, Search, User } from 'lucide-react';
 import { supabase, Analysis, Meeting, ActionItem, TranscriptSegment } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { SummaryCard } from './SummaryCard';
@@ -10,6 +10,7 @@ import { ActionItemsPanel } from './ActionItemsPanel';
 import { PeoplePanel } from './PeoplePanel';
 import { ProcessingState } from './ProcessingState';
 import { TaskModal } from './TaskModal';
+import { SpeakerModal } from './SpeakerModal';
 import toast from 'react-hot-toast';
 
 interface DashboardProps {
@@ -27,6 +28,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [taskInitialText, setTaskInitialText] = useState('');
+  const [showSpeakerModal, setShowSpeakerModal] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -156,6 +158,63 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
     setActionItems(prev => [...prev, newTask]);
     setShowTaskModal(false);
     setTaskInitialText('');
+  };
+
+  const handleSpeakerUpdate = async (speakerMappings: Record<string, string>) => {
+    if (!analysis) return;
+
+    try {
+      // Update transcript segments with new speaker names
+      const updatePromises = transcriptSegments.map(segment => {
+        const newSpeakerName = speakerMappings[segment.speaker];
+        if (newSpeakerName && newSpeakerName !== segment.speaker) {
+          return supabase
+            .from('transcript_segments')
+            .update({ speaker: newSpeakerName })
+            .eq('id', segment.id);
+        }
+        return null;
+      }).filter(Boolean);
+
+      await Promise.all(updatePromises);
+
+      // Update local state
+      setTranscriptSegments(prev =>
+        prev.map(segment => ({
+          ...segment,
+          speaker: speakerMappings[segment.speaker] || segment.speaker
+        }))
+      );
+
+      // Update analysis JSON with new speaker names
+      const updatedAnalysisJson = {
+        ...analysis.analysis_json,
+        speakers: analysis.analysis_json.speakers.map(speaker => ({
+          ...speaker,
+          name: speakerMappings[speaker.name] || speaker.name
+        })),
+        transcript_segments: analysis.analysis_json.transcript_segments.map(segment => ({
+          ...segment,
+          speaker: speakerMappings[segment.speaker] || segment.speaker
+        }))
+      };
+
+      await supabase
+        .from('analyses')
+        .update({ analysis_json: updatedAnalysisJson })
+        .eq('id', analysis.id);
+
+      setAnalysis(prev => prev ? {
+        ...prev,
+        analysis_json: updatedAnalysisJson
+      } : null);
+
+      toast.success('Speaker names updated successfully!');
+      setShowSpeakerModal(false);
+    } catch (error) {
+      console.error('Error updating speakers:', error);
+      toast.error('Failed to update speaker names');
+    }
   };
 
   const handleExport = async () => {
@@ -375,13 +434,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
               <div className="p-6 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-900">Transcript</h2>
-                  <button
-                    onClick={() => toast.success('Raw transcript view coming soon!')}
-                    className="text-sm text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1"
-                  >
-                    <Eye size={14} />
-                    <span>View raw transcript</span>
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setShowSpeakerModal(true)}
+                      className="text-sm text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1"
+                    >
+                      <User size={14} />
+                      <span>Edit speakers</span>
+                    </button>
+                    <button
+                      onClick={() => toast.success('Raw transcript view coming soon!')}
+                      className="text-sm text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1"
+                    >
+                      <Eye size={14} />
+                      <span>View raw</span>
+                    </button>
+                  </div>
                 </div>
                 <div className="mt-4 relative">
                   <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -430,6 +498,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
         analysisId={analysis.id}
         initialText={taskInitialText}
         onTaskCreated={handleTaskCreated}
+      />
+      
+      <SpeakerModal
+        isOpen={showSpeakerModal}
+        onClose={() => setShowSpeakerModal(false)}
+        speakers={analysis?.analysis_json.speakers || []}
+        onUpdate={handleSpeakerUpdate}
       />
     </div>
   );
