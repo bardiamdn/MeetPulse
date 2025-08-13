@@ -140,39 +140,3 @@ export const ActionItemsPanel: React.FC<ActionItemsPanelProps> = ({
     </motion.div>
   );
 };
-                  <div className="flex items-center space-x-2">
-                    {item.owner && (
-                      <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
-                        {item.owner}
-                      </span>
-                    )}
-                    <span className={`text-xs px-2 py-1 rounded-full flex items-center space-x-1 ${
-                      getPriorityColor(item.priority)
-                    }`}>
-                      {getPriorityIcon(item.priority)}
-                      <span className="capitalize">{item.priority}</span>
-                    </span>
-                  </div>
-                  
-                  {item.due_date && (
-                    <span className="text-xs text-gray-500">
-                      Due: {new Date(item.due_date).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-
-        {actionItems.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            <Clock size={24} className="mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No action items found</p>
-            <p className="text-xs text-gray-400">AI will extract tasks from your meeting</p>
-          </div>
-        )}
-      </div>
-    </motion.div>
-  );
-};
