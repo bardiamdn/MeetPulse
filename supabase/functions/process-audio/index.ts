@@ -202,6 +202,15 @@ IMPORTANT INSTRUCTIONS:
 3. SPEAKER CONSISTENCY: Ensure the same speaker gets the same name throughout all transcript segments
 4. VOICE CHANGES: Look for changes in speaking style, vocabulary, or context that indicate different speakers
 5. MINIMUM 2 SPEAKERS: Unless it's clearly a monologue, try to identify at least 2-3 different speakers
+6. SENTIMENT ANALYSIS: Create sentiment data points throughout the meeting duration:
+   - Analyze the emotional tone of each segment (positive: 0.1 to 1.0, neutral: -0.1 to 0.1, negative: -1.0 to -0.1)
+   - Generate sentiment points at regular intervals (every 10-15 seconds) based on the transcript segments
+   - Consider context, word choice, and speaking patterns to determine sentiment
+   - Ensure sentiment points span the entire meeting duration from start to end
+7. TIMELINE EVENTS: Create meaningful timeline events at different timestamps throughout the meeting
+   - Identify key discussion points, decisions, topic changes, and important moments
+   - Distribute events across the meeting timeline, not just at the beginning
+   - Use actual timestamps from the transcript segments
 
 Raw transcript segments from Whisper: ${JSON.stringify(whisperResult.segments)}
 
