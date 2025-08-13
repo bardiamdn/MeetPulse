@@ -59,8 +59,8 @@ export const RawTranscriptModal: React.FC<RawTranscriptModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-full max-h-[90vh] flex flex-col">
         <div className="p-6 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">Raw Transcript</h2>
@@ -101,8 +101,8 @@ export const RawTranscriptModal: React.FC<RawTranscriptModalProps> = ({
           )}
         </div>
 
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6">
             {rawTranscript?.text ? (
               <div className="space-y-6">
                 <div>
