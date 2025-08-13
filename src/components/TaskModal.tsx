@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, User, Flag, Clock } from 'lucide-react';
+import { X, Calendar, User, Flag, Clock, ChevronDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { Speaker, ActionItem } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 interface TaskModalProps {
@@ -9,6 +10,7 @@ interface TaskModalProps {
   analysisId: string;
   initialText?: string;
   editingTask?: ActionItem | null;
+  speakers: Speaker[];
   onTaskCreated: (task: any) => void;
   onTaskUpdated?: (task: any) => void;
 }
@@ -19,6 +21,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   analysisId,
   initialText = '',
   editingTask = null,
+  speakers,
   onTaskCreated,
   onTaskUpdated
 }) => {
@@ -27,6 +30,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   // Load editing task data
   useEffect(() => {
@@ -147,15 +151,46 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Assigned To
             </label>
-            <div className="relative">
-              <User size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={owner}
-                onChange={(e) => setOwner(e.target.value)}
-                placeholder="Enter person's name..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              />
+            <div className="relative" onBlur={() => setTimeout(() => setShowDropdown(false), 150)}>
+              <div className="relative">
+                <User size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={owner}
+                  onChange={(e) => setOwner(e.target.value)}
+                  onFocus={() => setShowDropdown(true)}
+                  placeholder="Enter person's name or select from dropdown..."
+                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <ChevronDown size={16} />
+                </button>
+              </div>
+              
+              {showDropdown && speakers.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  {speakers.map((speaker) => (
+                    <button
+                      key={speaker.name}
+                      type="button"
+                      onClick={() => {
+                        setOwner(speaker.name);
+                        setShowDropdown(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-medium">
+                        {speaker.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-sm text-gray-900">{speaker.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

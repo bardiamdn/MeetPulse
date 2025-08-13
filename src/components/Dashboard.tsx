@@ -32,6 +32,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
   const [editingTask, setEditingTask] = useState<ActionItem | null>(null);
   const [showSpeakerModal, setShowSpeakerModal] = useState(false);
   const [showRawTranscriptModal, setShowRawTranscriptModal] = useState(false);
+  const [speakers, setSpeakers] = useState<Speaker[]>([]);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -69,6 +70,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
 
         if (analysisData) {
           setAnalysis(analysisData);
+
+          if (analysisData.status === 'ready' && analysisData.analysis_json?.speakers) {
+            setSpeakers(analysisData.analysis_json.speakers);
+          }
 
           if (analysisData.status === 'ready') {
             // Fetch transcript segments
@@ -233,6 +238,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
         ...prev,
         analysis_json: updatedAnalysisJson
       } : null);
+      
+      // Update speakers state
+      setSpeakers(updatedAnalysisJson.speakers);
 
       toast.success('Speaker names updated successfully!');
       setShowSpeakerModal(false);
@@ -490,6 +498,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
               
               <TranscriptViewer
                 segments={filteredSegments}
+                speakers={speakers}
                 currentTimestamp={currentTimestamp}
                 onSegmentClick={handleTimestampClick}
               />
@@ -506,7 +515,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
             />
             
             <PeoplePanel
-              speakers={analysis.analysis_json.speakers}
+              speakers={speakers}
               onSpeakerClick={(speakerName) => {
                 setSearchQuery(speakerName);
               }}
@@ -525,6 +534,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
         analysisId={analysis.id}
         initialText={taskInitialText}
         editingTask={editingTask}
+        speakers={speakers}
         onTaskCreated={handleTaskCreated}
         onTaskUpdated={handleTaskUpdated}
       />
@@ -532,7 +542,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
       <SpeakerModal
         isOpen={showSpeakerModal}
         onClose={() => setShowSpeakerModal(false)}
-        speakers={analysis?.analysis_json.speakers || []}
+        speakers={speakers}
         onUpdate={handleSpeakerUpdate}
       />
       

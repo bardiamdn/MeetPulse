@@ -1,16 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import { User, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { TranscriptSegment } from '../lib/supabase';
+import { TranscriptSegment, Speaker } from '../lib/supabase';
 
 interface TranscriptViewerProps {
   segments: TranscriptSegment[];
+  speakers: Speaker[];
   currentTimestamp: number;
   onSegmentClick: (timestamp: number) => void;
 }
 
 export const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   segments,
+  speakers,
   currentTimestamp,
   onSegmentClick
 }) => {
