@@ -33,7 +33,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
       </p>
       
       <button
-        onClick={() => onCreateTask(`Follow up on: ${summary.split('.')[0]}`)}
+        onClick={() => onCreateTask(`Follow up on: ${summary.split('.')[0]}...`)}
         className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors text-sm font-medium"
       >
         <Plus size={14} />

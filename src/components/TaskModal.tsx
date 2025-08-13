@@ -71,11 +71,16 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
   const handleClose = () => {
     onClose();
-    // Reset form when closing
-    setText(initialText);
+    // Don't reset text to preserve initialText
     setOwner('');
     setDueDate('');
     setPriority('medium');
+  };
+
+  // Update text when initialText changes
+  React.useEffect(() => {
+    setText(initialText);
+  }, [initialText]);
   };
 
   if (!isOpen) return null;

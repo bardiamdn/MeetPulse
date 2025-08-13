@@ -11,6 +11,7 @@ import { PeoplePanel } from './PeoplePanel';
 import { ProcessingState } from './ProcessingState';
 import { TaskModal } from './TaskModal';
 import { SpeakerModal } from './SpeakerModal';
+import { RawTranscriptModal } from './RawTranscriptModal';
 import toast from 'react-hot-toast';
 
 interface DashboardProps {
@@ -29,6 +30,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [taskInitialText, setTaskInitialText] = useState('');
   const [showSpeakerModal, setShowSpeakerModal] = useState(false);
+  const [showRawTranscriptModal, setShowRawTranscriptModal] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -443,7 +445,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
                       <span>Edit speakers</span>
                     </button>
                     <button
-                      onClick={() => toast.success('Raw transcript view coming soon!')}
+                      onClick={() => setShowRawTranscriptModal(true)}
                       className="text-sm text-blue-600 hover:text-blue-700 transition-colors flex items-center space-x-1"
                     >
                       <Eye size={14} />
@@ -505,6 +507,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
         onClose={() => setShowSpeakerModal(false)}
         speakers={analysis?.analysis_json.speakers || []}
         onUpdate={handleSpeakerUpdate}
+      />
+      
+      <RawTranscriptModal
+        isOpen={showRawTranscriptModal}
+        onClose={() => setShowRawTranscriptModal(false)}
+        rawTranscript={analysis?.raw_transcript}
+        meetingTitle={meeting?.title || 'Meeting'}
       />
     </div>
   );
