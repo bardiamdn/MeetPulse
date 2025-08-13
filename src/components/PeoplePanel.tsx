@@ -12,6 +12,9 @@ export const PeoplePanel: React.FC<PeoplePanelProps> = ({
   speakers,
   onSpeakerClick
 }) => {
+  // Force re-render when speakers change
+  const speakerList = React.useMemo(() => speakers, [speakers]);
+
   const getAvatarColor = (name: string) => {
     const colors = [
       'bg-blue-500',
@@ -44,7 +47,7 @@ export const PeoplePanel: React.FC<PeoplePanelProps> = ({
       <h2 className="text-lg font-semibold text-gray-900 mb-4">People</h2>
 
       <div className="space-y-3">
-        {speakers.map((speaker, index) => (
+        {speakerList.map((speaker, index) => (
           <motion.div
             key={speaker.name}
             initial={{ opacity: 0, x: 20 }}
@@ -87,7 +90,7 @@ export const PeoplePanel: React.FC<PeoplePanelProps> = ({
           </motion.div>
         ))}
 
-        {speakers.length === 0 && (
+        {speakerList.length === 0 && (
           <div className="text-center py-8 text-gray-500">
             <User size={24} className="mx-auto mb-2 opacity-50" />
             <p className="text-sm">No speakers identified</p>

@@ -43,7 +43,13 @@ export const SpeakerModal: React.FC<SpeakerModalProps> = ({
       }
     });
 
+    if (Object.keys(changedMappings).length === 0) {
+      // No changes made, just close the modal
+      onClose();
+      return;
+    }
     onUpdate(changedMappings);
+    onClose();
   };
 
   const getAvatarColor = (name: string) => {

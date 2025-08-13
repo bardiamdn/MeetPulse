@@ -217,11 +217,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
         }))
       };
 
-      await supabase
+      const { error: updateError } = await supabase
         .from('analyses')
         .update({ analysis_json: updatedAnalysisJson })
         .eq('id', analysis.id);
 
+      if (updateError) {
+        throw updateError;
+      }
       setAnalysis(prev => prev ? {
         ...prev,
         analysis_json: updatedAnalysisJson
