@@ -17,10 +17,8 @@ export const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const activeSegmentRef = useRef<HTMLDivElement>(null);
   
-  // Force re-render when segments change, including speaker names
-  const segmentList = React.useMemo(() => {
-    return segments.map(segment => ({ ...segment }));
-  }, [segments]);
+  // Force re-render when segments change
+  const segmentList = React.useMemo(() => segments, [segments]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
