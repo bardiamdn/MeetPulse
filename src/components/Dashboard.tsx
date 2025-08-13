@@ -198,10 +198,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
 
       // Update local state
       setTranscriptSegments(prev =>
-        prev.map(segment => ({
-          ...segment,
-          speaker: speakerMappings[segment.speaker] || segment.speaker
-        }))
+        prev.map(segment => {
+          const newSpeaker = speakerMappings[segment.speaker] || segment.speaker;
+          return {
+            ...segment,
+            speaker: newSpeaker
+          };
+        })
       );
 
       // Update analysis JSON with new speaker names
