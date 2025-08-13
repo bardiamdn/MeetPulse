@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Plus, Clock, AlertCircle, Flag } from 'lucide-react';
+import { Check, Plus, Clock, AlertCircle, Flag, Edit2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ActionItem } from '../lib/supabase';
 
@@ -7,12 +7,14 @@ interface ActionItemsPanelProps {
   actionItems: ActionItem[];
   onToggleComplete: (actionItem: ActionItem) => void;
   onAddTask: (initialText?: string) => void;
+  onEditTask: (actionItem: ActionItem) => void;
 }
 
 export const ActionItemsPanel: React.FC<ActionItemsPanelProps> = ({
   actionItems,
   onToggleComplete,
-  onAddTask
+  onAddTask,
+  onEditTask
 }) => {
   const getPriorityIcon = (priority: string) => {
     switch (priority) {
@@ -88,7 +90,56 @@ export const ActionItemsPanel: React.FC<ActionItemsPanelProps> = ({
                   {item.text}
                 </p>
                 
-                <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center space-x-2 mt-2">
+                  {item.owner && (
+                    <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
+                      {item.owner}
+                    </span>
+                  )}
+                  <span className={`text-xs px-2 py-1 rounded-full flex items-center space-x-1 ${
+                    getPriorityColor(item.priority)
+                  }`}>
+                    {getPriorityIcon(item.priority)}
+                    <span className="capitalize">{item.priority}</span>
+                  </span>
+                </div>
+                
+                {item.due_date && (
+                  <div className="mt-2">
+                    <span className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
+                      Due: {new Date(item.due_date).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex items-center space-x-1 ml-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditTask(item);
+                  }}
+                  className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-all"
+                  title="Edit task"
+                >
+                  <Edit2 size={12} />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+
+        {actionItems.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <Clock size={24} className="mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No action items found</p>
+            <p className="text-xs text-gray-400">AI will extract tasks from your meeting</p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
                   <div className="flex items-center space-x-2">
                     {item.owner && (
                       <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full">
