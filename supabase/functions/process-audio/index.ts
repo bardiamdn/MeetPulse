@@ -219,7 +219,7 @@ Return only valid JSON, no other text.`;
             }
           ],
           temperature: 0.1,
-          max_tokens: 2000
+          max_tokens: 4000
         }),
       });
 
@@ -230,13 +230,19 @@ Return only valid JSON, no other text.`;
 
       const gptResult = await gptResponse.json();
       
-      // Clean the GPT response content to remove markdown code blocks and extra whitespace
-      let gptContent = gptResult.choices[0].message.content.trim();
+      // Robust JSON extraction from GPT response
+      let gptContent = gptResult.choices[0].message.content;
       
-      // Remove markdown code block fences if present
-      gptContent = gptContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      gptContent = gptContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
-      gptContent = gptContent.trim();
+      // Find the first opening brace and last closing brace
+      const firstBrace = gptContent.indexOf('{');
+      const lastBrace = gptContent.lastIndexOf('}');
+      
+      if (firstBrace === -1 || lastBrace === -1 || firstBrace >= lastBrace) {
+        throw new Error('No valid JSON object found in GPT response');
+      }
+      
+      // Extract only the JSON content between braces
+      gptContent = gptContent.substring(firstBrace, lastBrace + 1);
       
       const analysisJson: AnalysisResult = JSON.parse(gptContent);
 
