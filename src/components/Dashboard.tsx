@@ -201,7 +201,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
 
       await Promise.all(updatePromises);
 
-      // Update local state
+      // Update local transcript segments state
       setTranscriptSegments(prev =>
         prev.map(segment => {
           const newSpeaker = speakerMappings[segment.speaker] || segment.speaker;
@@ -212,6 +212,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
         })
       );
 
+      // Update speakers state
+      setSpeakers(prev =>
+        prev.map(speaker => {
+          const newName = speakerMappings[speaker.name] || speaker.name;
+          return {
+            ...speaker,
+            name: newName
+          };
+        })
+      );
       // Update analysis JSON with new speaker names
       const updatedAnalysisJson = {
         ...analysis.analysis_json,
@@ -239,8 +249,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
         analysis_json: updatedAnalysisJson
       } : null);
       
-      // Update speakers state
-      setSpeakers(updatedAnalysisJson.speakers);
 
       toast.success('Speaker names updated successfully!');
       setShowSpeakerModal(false);

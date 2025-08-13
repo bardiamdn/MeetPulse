@@ -19,8 +19,14 @@ export const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const activeSegmentRef = useRef<HTMLDivElement>(null);
   
-  // Force re-render when segments change
-  const segmentList = React.useMemo(() => segments, [segments]);
+  // Force re-render when segments change - create new objects to trigger React updates
+  const segmentList = React.useMemo(() => {
+    return segments.map(segment => ({
+      ...segment,
+      // Force new object creation by adding a timestamp
+      _updateKey: Date.now()
+    }));
+  }, [segments]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
