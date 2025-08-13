@@ -29,6 +29,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [taskInitialText, setTaskInitialText] = useState('');
+  const [editingTask, setEditingTask] = useState<ActionItem | null>(null);
   const [showSpeakerModal, setShowSpeakerModal] = useState(false);
   const [showRawTranscriptModal, setShowRawTranscriptModal] = useState(false);
   const { user } = useAuth();
@@ -160,6 +161,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
     setActionItems(prev => [...prev, newTask]);
     setShowTaskModal(false);
     setTaskInitialText('');
+  };
+
+  const handleEditTask = (task: ActionItem) => {
+    setEditingTask(task);
+    setShowTaskModal(true);
+  };
+
+  const handleTaskUpdated = (updatedTask: ActionItem) => {
+    setActionItems(prev =>
+      prev.map(item =>
+        item.id === updatedTask.id ? updatedTask : item
+      )
+    );
+    setShowTaskModal(false);
+    setEditingTask(null);
   };
 
   const handleSpeakerUpdate = async (speakerMappings: Record<string, string>) => {
@@ -479,6 +495,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
               actionItems={actionItems}
               onToggleComplete={handleActionItemToggle}
               onAddTask={handleCreateTask}
+              onEditTask={handleEditTask}
             />
             
             <PeoplePanel
