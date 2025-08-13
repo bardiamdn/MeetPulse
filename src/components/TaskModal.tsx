@@ -81,7 +81,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   React.useEffect(() => {
     setText(initialText);
   }, [initialText]);
-  };
 
   if (!isOpen) return null;
 
