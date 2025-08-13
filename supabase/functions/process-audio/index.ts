@@ -229,7 +229,16 @@ Return only valid JSON, no other text.`;
       }
 
       const gptResult = await gptResponse.json();
-      const analysisJson: AnalysisResult = JSON.parse(gptResult.choices[0].message.content);
+      
+      // Clean the GPT response content to remove markdown code blocks and extra whitespace
+      let gptContent = gptResult.choices[0].message.content.trim();
+      
+      // Remove markdown code block fences if present
+      gptContent = gptContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      gptContent = gptContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      gptContent = gptContent.trim();
+      
+      const analysisJson: AnalysisResult = JSON.parse(gptContent);
 
       // Update analysis with final results
       await supabase
