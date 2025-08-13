@@ -225,6 +225,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
       if (updateError) {
         throw updateError;
       }
+      
       setAnalysis(prev => prev ? {
         ...prev,
         analysis_json: updatedAnalysisJson

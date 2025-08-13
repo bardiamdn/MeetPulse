@@ -16,6 +16,9 @@ export const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const activeSegmentRef = useRef<HTMLDivElement>(null);
+  
+  // Force re-render when segments change
+  const segmentList = React.useMemo(() => segments, [segments]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -49,7 +52,7 @@ export const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
     }
   }, [currentTimestamp]);
 
-  if (!segments.length) {
+  if (!segmentList.length) {
     return (
       <div className="p-6 text-center text-gray-500">
         <Clock size={24} className="mx-auto mb-2 opacity-50" />
@@ -61,7 +64,7 @@ export const TranscriptViewer: React.FC<TranscriptViewerProps> = ({
   return (
     <div ref={containerRef} className="h-full overflow-y-auto">
       <div className="space-y-4 p-6">
-        {segments.map((segment, index) => {
+        {segmentList.map((segment, index) => {
           const isActive = isActiveSegment(segment);
           
           return (
