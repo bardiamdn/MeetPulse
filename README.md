@@ -56,7 +56,7 @@ Before you begin, ensure you have:
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/bardiamdn/MeetPulse.git
 cd meetpulse
 ```
 
@@ -227,7 +227,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you encounter any issues:
 
 1. Check the [Issues](../../issues) page for existing solutions
-2. Create a new issue with detailed information
+2. Create a new issue at https://github.com/bardiamdn/MeetPulse/issues with detailed information
 3. Include error messages, browser console logs, and steps to reproduce
 
 ## 🎉 Acknowledgments
