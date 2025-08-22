@@ -77,6 +77,7 @@ export const useAuth = () => {
       email,
       password,
       options: {
+        emailRedirectTo: 'https://meeting.bardiamadani.com/',
         data: {
           full_name: fullName,
         },
