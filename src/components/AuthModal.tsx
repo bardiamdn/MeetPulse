@@ -31,9 +31,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       }
 
       if (error) {
-        toast.error(error.message);
+        if (error.message.includes('Email not confirmed')) {
+          toast.error('Please check your email and click the confirmation link before signing in.', {
+            duration: 6000,
+          });
+        } else {
+          toast.error(error.message);
+        }
       } else {
-        toast.success(isSignIn ? 'Signed in successfully!' : 'Account created successfully!');
+        if (isSignIn) {
+          toast.success('Signed in successfully!');
+        } else {
+          toast.success('Account created! Please check your email and click the confirmation link to sign in.', {
+            duration: 6000,
+          });
+        }
         onClose();
       }
     } catch (err) {
