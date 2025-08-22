@@ -91,11 +91,23 @@ export const useAuth = () => {
     return { error };
   };
 
+  const resendConfirmationEmail = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+      options: {
+        emailRedirectTo: 'https://meeting.bardiamadani.com/',
+      },
+    });
+    return { error };
+  };
+
   return {
     user,
     loading,
     signInWithEmail,
     signUpWithEmail,
     signOut,
+    resendConfirmationEmail,
   };
 };

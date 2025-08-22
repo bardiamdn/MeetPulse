@@ -14,7 +14,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signInWithEmail, signUpWithEmail } = useAuth();
+  const [showResendButton, setShowResendButton] = useState(false);
+  const { signInWithEmail, signUpWithEmail, resendConfirmationEmail } = useAuth();
 
   if (!isOpen) return null;
 
@@ -35,6 +36,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           toast.error('Please check your email and click the confirmation link before signing in.', {
             duration: 6000,
           });
+          setShowResendButton(true);
         } else {
           toast.error(error.message);
         }
@@ -46,7 +48,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             duration: 6000,
           });
         }
+        setShowResendButton(false);
         onClose();
+      }
+    } catch (err) {
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await resendConfirmationEmail(email);
+      if (error) {
+        toast.error('Failed to resend confirmation email: ' + error.message);
+      } else {
+        toast.success('Confirmation email sent! Please check your inbox.', {
+          duration: 6000,
+        });
+        setShowResendButton(false);
       }
     } catch (err) {
       toast.error('An unexpected error occurred');
@@ -118,6 +140,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               {isLoading ? 'Please wait...' : (isSignIn ? 'Sign In' : 'Create Account')}
             </button>
           </form>
+
+          {showResendButton && isSignIn && (
+            <div className="mt-4">
+              <button
+                onClick={handleResendEmail}
+                disabled={isLoading}
+                className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {isLoading ? 'Sending...' : 'Resend Confirmation Email'}
+              </button>
+            </div>
+          )}
 
           <div className="mt-6 text-center">
             <button
