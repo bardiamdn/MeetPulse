@@ -42,13 +42,13 @@ function App() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
-          <p className="text-xs text-gray-400 mt-2">Checking authentication status</p>
+          <p className="text-xs text-gray-400 mt-2">Initializing application...</p>
         </div>
       </div>
     );
   }
 
-  console.log('App render - User:', user?.email || 'No user', 'Loading:', loading);
+  console.log('App render - User:', user?.email || 'No user', 'Loading:', loading, 'Timestamp:', new Date().toISOString());
 
   if (!user) {
     return (

@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     // Get initial session
@@ -21,6 +22,7 @@ export const useAuth = () => {
         console.error('Auth initialization error:', error);
         setUser(null);
       } finally {
+        setInitialized(true);
         setLoading(false);
       }
     };
@@ -34,7 +36,11 @@ export const useAuth = () => {
       console.log('Auth state change:', event, 'User:', session?.user?.email || 'No user');
       
       setUser(session?.user ?? null);
-      setLoading(false);
+      
+      // Only set loading to false after initial load
+      if (initialized) {
+        setLoading(false);
+      }
 
       // Create profile if user signs up
       if (event === 'SIGNED_IN' && session?.user) {
