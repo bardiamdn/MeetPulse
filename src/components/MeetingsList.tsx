@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Clock, CheckCircle, XCircle, Play, Trash2 } from 'lucide-react';
+import { Upload, Clock, CheckCircle, XCircle, Play, Trash2, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase, Meeting } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
@@ -18,7 +18,7 @@ export const MeetingsList: React.FC<MeetingsListProps> = ({
 }) => {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     if (!user) return;
@@ -140,6 +140,19 @@ export const MeetingsList: React.FC<MeetingsListProps> = ({
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      const { error } = await signOut();
+      if (error) {
+        toast.error('Failed to sign out');
+      } else {
+        toast.success('Signed out successfully');
+      }
+    } catch (error) {
+      toast.error('Failed to sign out');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -151,6 +164,17 @@ export const MeetingsList: React.FC<MeetingsListProps> = ({
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={handleSignOut}
+            className="inline-flex items-center px-4 py-2 text-gray-700 hover:text-red-600 transition-colors space-x-2"
+            title="Sign Out"
+          >
+            <LogOut size={16} />
+            <span>Sign Out</span>
+          </button>
+        </div>
+        
         <div className="text-center mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

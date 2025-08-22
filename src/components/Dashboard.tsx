@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Share2, Download, Eye, Plus, Search, User } from 'lucide-react';
+import { Share2, Download, Eye, Plus, Search, User, LogOut } from 'lucide-react';
 import { supabase, Analysis, Meeting, ActionItem, TranscriptSegment } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { SummaryCard } from './SummaryCard';
@@ -33,7 +33,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
   const [showSpeakerModal, setShowSpeakerModal] = useState(false);
   const [showRawTranscriptModal, setShowRawTranscriptModal] = useState(false);
   const [speakers, setSpeakers] = useState<Speaker[]>([]);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     if (!meetingId || !user) return;
@@ -383,6 +383,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
     toast.success('Complete analysis exported successfully!');
   };
 
+  const handleSignOut = async () => {
+    try {
+      const { error } = await signOut();
+      if (error) {
+        toast.error('Failed to sign out');
+      } else {
+        toast.success('Signed out successfully');
+      }
+    } catch (error) {
+      toast.error('Failed to sign out');
+    }
+  };
+
   if (loading) {
     return <ProcessingState status="processing" progress={25} />;
   }
@@ -440,6 +453,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ meetingId, onBack }) => {
               >
                 <Download size={16} />
                 <span>Export</span>
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="px-4 py-2 text-gray-700 hover:text-red-600 transition-colors flex items-center space-x-2"
+                title="Sign Out"
+              >
+                <LogOut size={16} />
+                <span>Sign Out</span>
               </button>
             </div>
           </div>
