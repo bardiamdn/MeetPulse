@@ -39,14 +39,94 @@ export const useAuth = () => {
       // Create profile if user signs up
       if (event === 'SIGNED_IN' && session?.user) {
         try {
-          const { data: existingProfile } = await supabase
+          const { data: existingProfile, error: selectError } = await supabase
             .from('profiles')
             .select('id')
             .eq('id', session.user.id)
             .single();
 
-          if (!existingProfile) {
-            await supabase.from('profiles').insert({
+          // Check if profile doesn't exist (PGRST116 error means no rows found)
+          if (!existingProfile || (selectError && selectError.code === 'PGRST116')) {
+            try {
+              const { error: insertError } = await supabase.from('profiles').insert({
+                id: session.user.id,
+                full_name: session.user.user_metadata?.full_name || '',
+                avatar_url: session.user.user_metadata?.avatar_url || '',
+              });
+              
+              if (insertError && insertError.code !== '23505') {
+                // Only throw if it's not a duplicate key error
+                throw insertError;
+              } else if (insertError && insertError.code === '23505') {
+                console.warn('Profile already exists for user:', session.user.email);
+              } else {
+                console.log('Profile created for user:', session.user.email);
+              }
+            } catch (insertError) {
+              console.error('Profile creation error:', insertError);
+            }
+          } else {
+            console.log('Profile already exists for user:', session.user.email);
+          }
+        } catch (error) {
+          // Handle any other unexpected errors in profile checking/creation
+          console.error('Profile handling error:', error);
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const signInWithEmail = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    return { error };
+  };
+
+  const signUpWithEmail = async (email: string, password: string, fullName: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: 'https://meeting.bardiamadani.com/',
+        data: {
+          full_name: fullName,
+        },
+      },
+    });
+    return { error };
+  };
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    return { error };
+  };
+
+  const resendConfirmationEmail = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+      options: {
+        emailRedirectTo: 'https://meeting.bardiamadani.com/',
+      },
+    });
+    return { error };
+  };
+
+  return {
+    user,
+    loading,
+    signInWithEmail,
+    signUpWithEmail,
+    signOut,
+    resendConfirmationEmail,
+  };
+};
               id: session.user.id,
               full_name: session.user.user_metadata?.full_name || '',
               avatar_url: session.user.user_metadata?.avatar_url || '',
