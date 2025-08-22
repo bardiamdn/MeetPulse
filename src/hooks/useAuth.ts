@@ -7,56 +7,51 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-
-    const initializeAuth = async () => {
+    // Get initial session
+    const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) {
           console.error('Session error:', error);
         }
         
-        if (mounted) {
-          console.log('Initial session:', session?.user?.email || 'No user');
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
+        console.log('Initial session user:', session?.user?.email || 'No user');
+        setUser(session?.user ?? null);
       } catch (error) {
         console.error('Auth initialization error:', error);
-        if (mounted) {
-          setUser(null);
-          setLoading(false);
-        }
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
     };
 
-    initializeAuth();
+    getInitialSession();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, session?.user?.email);
+      console.log('Auth state change:', event, 'User:', session?.user?.email || 'No user');
       
-      if (mounted) {
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
+      setUser(session?.user ?? null);
+      setLoading(false);
 
       // Create profile if user signs up
       if (event === 'SIGNED_IN' && session?.user) {
         try {
-          const { data: profile } = await supabase
+          const { data: existingProfile } = await supabase
             .from('profiles')
-            .select('*')
-            .eq('id', session.user.id);
+            .select('id')
+            .eq('id', session.user.id)
+            .single();
 
-          if (!profile || profile.length === 0) {
+          if (!existingProfile) {
             await supabase.from('profiles').insert({
               id: session.user.id,
               full_name: session.user.user_metadata?.full_name || '',
               avatar_url: session.user.user_metadata?.avatar_url || '',
             });
+            console.log('Profile created for user:', session.user.email);
           }
         } catch (error) {
           console.error('Profile creation error:', error);
@@ -65,7 +60,6 @@ export const useAuth = () => {
     });
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, []);

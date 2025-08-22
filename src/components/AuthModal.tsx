@@ -34,10 +34,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         toast.error(error.message);
       } else {
         toast.success(isSignIn ? 'Signed in successfully!' : 'Account created successfully!');
-        // Don't close modal immediately, let auth state change handle it
-        setTimeout(() => {
-          onClose();
-        }, 500);
+        onClose();
       }
     } catch (err) {
       toast.error('An unexpected error occurred');
