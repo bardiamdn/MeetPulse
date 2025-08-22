@@ -5,13 +5,8 @@ import { supabase } from '../lib/supabase';
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    if (initialized) return;
-    
-    setInitialized(true);
-    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
@@ -25,8 +20,9 @@ export const useAuth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state change:', event, session?.user?.email);
       setUser(session?.user ?? null);
-      if (!loading) setLoading(false);
+      setLoading(false);
 
       // Create profile if user signs up
       if (event === 'SIGNED_IN' && session?.user) {
@@ -50,7 +46,7 @@ export const useAuth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [initialized, loading]);
+  }, []);
 
   const signInWithEmail = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
